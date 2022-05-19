@@ -132,19 +132,40 @@ wait
 clear
 c "Now let's register our kind cluster us-east1 with kcp"
 
-cat <<EOF > "${KCP_DATA_DIR}/cluster-us-east1.yaml"
-apiVersion: workload.kcp.dev/v1alpha1
-kind: WorkloadCluster
-metadata:
-  name: kind-us-east1
-spec:
-  kubeconfig: |
-$(sed 's,^,    ,' "${CLUSTERS_DIR}"/us-east1.kubeconfig)
-EOF
-pe "cat ${KCP_DATA_DIR}/cluster-us-east1.yaml"
+# cat <<EOF > "${KCP_DATA_DIR}/cluster-us-east1.yaml"
+# apiVersion: workload.kcp.dev/v1alpha1
+# kind: WorkloadCluster
+# metadata:
+#   name: kind-us-east1
+# spec:
+#   kubeconfig: |
+# $(sed 's,^,    ,' "${CLUSTERS_DIR}"/us-east1.kubeconfig)
+# EOF
+# pe "cat ${KCP_DATA_DIR}/cluster-us-east1.yaml"
 
 wait;clear
-pe "kubectl apply -f ${KCP_DATA_DIR}/cluster-us-east1.yaml"
+
+# kubectl --kubeconfig="${KUBECONFIG}" apply -f "${DEMOS_DIR}"/../../../config/crds/workload.kcp.dev_workloadclusters.yaml
+# 1) Can't install WorkloadCluster on the kcp, because error about CRD installation limitation: 
+# error: failed to create WorkloadCluster: the server could not find the requested resource (post workloadclusters.workload.kcp.dev)
+# So, kcp doesn't have CRD workloadclusters.workload.kcp.dev. But I see from source code changes, that's expected behavior.
+# Even if I will try to apply CRD it fails:
+#
+# Error from server (Forbidden): error when creating 
+## "/Users/oandriie/projects/kcp/contrib/demo/../../config/crds/workload.kcp.dev_workloadclusters.yaml": 
+## customresourcedefinitions.apiextensions.k8s.io "workloadclusters.workload.kcp.dev" 
+## is forbidden: workload.kcp.dev is a reserved group
+#
+
+# Looks like syncer shouldn't be installed on the kcp. Then I guess it should be installed on the real cluster...
+# 2) OK, I tried to change kubeconfig to point to the real cluster us-east1,
+# I thought maybe syncer should be deployed here, but fails again:
+# error: current URL "https://127.0.0.1:63941" does not point to cluster workspace
+kubectl --kubeconfig=${CLUSTERS_DIR}/us-east1.kubeconfig apply -f "${DEMOS_DIR}"/../../../config/crds/workload.kcp.dev_workloadclusters.yaml
+export KUBECONFIG="${CLUSTERS_DIR}/us-east1.kubeconfig"
+kubectl kcp workload sync kind-us-east1 --syncer-image ghcr.io/kcp-dev/kcp/syncer-c2e3073d5026a8f7f2c47a50c16bdbec:c7bd5c5 > syncer.yaml
+
+###  todo set up resources to sync...  --resources ingresses.networking.k8s.io,deployments.apps,services \
 
 c "Let's wait for kcp to have the cluster syncing ready"
 pe "kubectl wait --for condition=Ready workloadcluster/kind-us-east1"

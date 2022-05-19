@@ -71,10 +71,8 @@ fi
 
 "${DEMOS_DIR}"/startKcp.sh \
     --token-auth-file "${DEMO_DIR}"/kcp-tokens \
-    --push-mode \
     --discovery-poll-interval 3s \
     --profiler-address localhost:6060 \
-    --resources-to-sync ingresses.networking.k8s.io,deployments.apps,services \
     ${VW_ARGS} \
     -v 2 &
 
