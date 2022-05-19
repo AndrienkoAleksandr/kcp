@@ -145,7 +145,7 @@ c "Now let's register our kind cluster us-east1 with kcp"
 
 wait;clear
 
-# kubectl --kubeconfig="${KUBECONFIG}" apply -f "${DEMOS_DIR}"/../../../config/crds/workload.kcp.dev_workloadclusters.yaml
+# kubectl --kubeconfig="${KUBECONFIG}" apply -f "${DEMOS_DIR}"/../../config/crds/workload.kcp.dev_workloadclusters.yaml
 # 1) Can't install WorkloadCluster on the kcp, because error about CRD installation limitation: 
 # error: failed to create WorkloadCluster: the server could not find the requested resource (post workloadclusters.workload.kcp.dev)
 # So, kcp doesn't have CRD workloadclusters.workload.kcp.dev. But I see from source code changes, that's expected behavior.
@@ -161,7 +161,7 @@ wait;clear
 # 2) OK, I tried to change kubeconfig to point to the real cluster us-east1,
 # I thought maybe syncer should be deployed here, but fails again:
 # error: current URL "https://127.0.0.1:63941" does not point to cluster workspace
-kubectl --kubeconfig=${CLUSTERS_DIR}/us-east1.kubeconfig apply -f "${DEMOS_DIR}"/../../../config/crds/workload.kcp.dev_workloadclusters.yaml
+kubectl --kubeconfig=${CLUSTERS_DIR}/us-east1.kubeconfig apply -f "${DEMOS_DIR}"/../../config/crds/workload.kcp.dev_workloadclusters.yaml
 export KUBECONFIG="${CLUSTERS_DIR}/us-east1.kubeconfig"
 kubectl kcp workload sync kind-us-east1 --syncer-image ghcr.io/kcp-dev/kcp/syncer-c2e3073d5026a8f7f2c47a50c16bdbec:c7bd5c5 > syncer.yaml
 
